@@ -3,6 +3,7 @@ import re
 import json
 from datetime import datetime
 import time
+from bs4 import BeautifulSoup
 
 def get_versions(api_url):
     versions = []
@@ -70,6 +71,44 @@ def getProductLastVersionrule1(product):
     print(product +" last version is " + lastProductVersion)
     return data
 
+from datetime import datetime
+
+import requests
+from bs4 import BeautifulSoup
+
+
+def get_latest_artifactory_version(url,product):
+    data={"name":product,"lastversion":"","reportDate":current_date_string}
+    # Send a GET request to the provided URL
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code != 200:
+        raise Exception(f"Failed to load page: {response.status_code}")
+        return None
+    # Parse the HTML content of the page
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # Find the element containing the Artifactory version information
+    h2_element = soup.find('h2', class_='text-font-stack font-weight-bold')
+
+    if not h2_element:
+        raise Exception("Artifactory version element not found on the page.")
+        return None
+    # Ensure that the product name is "Artifactory"
+    product_name = h2_element.find('span', class_='productName')
+    if product_name and product_name.text.strip() == 'Artifactory':
+        # Extract the version number from the <span> with class 'version'
+        version_element = h2_element.find('span', class_='version')
+        if version_element:
+            version_text = version_element.text.strip()
+            data = {"product": product, "lastVersion": version_text, "reportDate": current_date_string}
+            return data
+
+    raise Exception("Artifactory version information is not structured as expected.")
+    return None
+
+
 def json_to_html_table(json_str):
     try:
         data = json.loads(json_str)
@@ -114,6 +153,7 @@ def json_to_html_table(json_str):
         print("An error occurred:", e)
 
 
+
 # start
 if __name__ == "__main__":
     json_array = []
@@ -121,6 +161,11 @@ if __name__ == "__main__":
     global current_date_string
     current_date_string = current_datetime.strftime("%d-%m-%Y")  # Format as "YYYY-MM-DD"
     print("current_date_string is " + current_date_string)
+
+    product = "artifactory"
+    url = "https://jfrog.com/download-legacy/"
+    json_array.append(get_latest_artifactory_version(url,product))
+
     json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
     json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
     json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
