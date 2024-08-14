@@ -179,6 +179,7 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionrule1("airbyte/bootloader"))
     json_array.append(getProductLastVersionrule1("dynatrace/dynatrace-operator"))
     json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
+    json_array.append(getProductLastVersionrule1("selenium/hub"))
 
     # Convert the list to a JSON array
     json_string = json.dumps(json_array)
