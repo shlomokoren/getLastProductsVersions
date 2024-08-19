@@ -49,7 +49,8 @@ def getlastVersion(versions,product):
     if len(matches)> 0:
         sorted_versions = sorted(matches, key=lambda x: [int(num) if num.isdigit() else num for num in
                                                          x.split('-')[0].split('.')])
-        lastversion = sorted_versions[-1]
+        lastversionx = sorted_versions[-1]
+        lastversion = str(lastversionx).split("-")[0]
     return lastversion
 
 def getProductLastVersionrule1(product):
