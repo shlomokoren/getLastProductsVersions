@@ -43,6 +43,8 @@ def getlastVersion(versions,product):
     pattern = r'\b\d{1,3}\.\d{1,3}(?:\.\d{1,3})?\b$'
     if(product == "library/sonarqube"):
         pattern = r'\b\d{1,3}\.\d{1,3}(?:\.\d{1,3})?-enterprise\b$'
+    elif (product == "gitlab/gitlab-ee"):
+        pattern = r'\b\d{1,3}\.\d{1,3}(?:\.\d{1,3})?-ee.0\b$'
     # Check each element in the list against the pattern
     matches = [element for element in versions if re.match(pattern, element)]
 #    print(matches)
@@ -71,6 +73,27 @@ def getProductLastVersionrule1(product):
     data = {"product":product,"lastVersion": lastProductVersion,"reportDate":current_date_string}
     print(product +" last version is " + lastProductVersion)
     return data
+
+def getProductLastVersionrule2(product):
+    lastProductVersion = None
+    products = product.split("/")
+    data={"name":product,"lastversion":"","reportDate":current_date_string}
+    api_url = "https://hub.docker.com/v2/namespaces/" + products[0] + "/repositories/"+products[1]+"/tags?page_size=100"
+    versions = None
+    try:
+        versions = get_versions(api_url)
+        if not versions:
+            print("Failed to fetch versions.")
+            return None
+    except:
+        print("Failed to fetch versions.")
+        return None
+    lastProductVersion = getlastVersion(versions,product)
+    data = {"product":product,"lastVersion": lastProductVersion,"reportDate":current_date_string}
+    print(product +" last version is " + lastProductVersion)
+    return data
+
+
 
 from datetime import datetime
 
@@ -162,11 +185,12 @@ if __name__ == "__main__":
     global current_date_string
     current_date_string = current_datetime.strftime("%d-%m-%Y")  # Format as "YYYY-MM-DD"
     print("current_date_string is " + current_date_string)
-
+    json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
     json_array.append(get_latest_artifactory_version(url,product))
 
+    json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
     json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
     json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
     json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
