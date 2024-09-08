@@ -55,6 +55,26 @@ def getlastVersion(versions,product):
         lastversion = str(lastversionx).split("-")[0]
     return lastversion
 
+def getProductLastVersionruleGithub(product):
+    data = {"product": product, "lastVersion": "0", "reportDate": current_date_string}
+    url="https://api.github.com/repos/"+product+"/tags"
+    response = requests.get(url)
+    # Check if the request was successful
+    if response.status_code != 200:
+        raise Exception(f"Failed to load page: {response.status_code}")
+        return None
+    data = response.json()
+    pattern = r"^v\d+\.\d+\.\d+$"
+    versionx = None
+    for item in data:
+        if re.match(pattern, item['name']):
+            versionx = item['name']
+            break
+    lastversion = versionx[1:]
+    print(product + "  "+lastversion)
+    data = {"product": product, "lastVersion": lastversion, "reportDate": current_date_string}
+    return data
+
 def getProductLastVersionrule1(product):
     lastProductVersion = None
     data={"name":product,"lastversion":"","reportDate":current_date_string}
@@ -185,6 +205,10 @@ if __name__ == "__main__":
     global current_date_string
     current_date_string = current_datetime.strftime("%d-%m-%Y")  # Format as "YYYY-MM-DD"
     print("current_date_string is " + current_date_string)
+
+    #rul to read last version from github
+    json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
+
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
