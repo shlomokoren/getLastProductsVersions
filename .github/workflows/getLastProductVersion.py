@@ -5,21 +5,26 @@ from datetime import datetime
 import time
 from bs4 import BeautifulSoup
 
+__version__ = "1.0.1"
+
 def get_versions(api_url):
     versions = []
     page = 1
     per_page = 100  # Adjust this value based on your needs
 
     try:
+        readRecords = 0  #records that alrady read
         while True:
             params = {"page": page, "page_size": per_page}
             response = requests.get(api_url, params=params)
             response.raise_for_status()  # Raise an exception for HTTP errors
             data = response.json()  # Parse response as JSON
+            totalRecords = 0
             try:
                 pageCont = int(data["count"] / per_page) + 1
                 if page == 1 :
-                    print("    count is " + str(data["count"]) + "  pageCont is " + str(pageCont) + " in " + api_url)
+                    totalRecords = data["count"]
+                    print(f"    count is {totalRecords}  pageCont is {pageCont}  in {api_url} ")
             except:
                 print("pageCont error")
 
@@ -27,7 +32,8 @@ def get_versions(api_url):
             if not results:  # Stop if no more results are returned
                 break
             versions.extend(tag["name"] for tag in results)
-            if page < pageCont:
+            readRecords = readRecords + per_page
+            if readRecords < totalRecords:
                 page += 1
                 time.sleep(2)
             else:
@@ -208,7 +214,6 @@ if __name__ == "__main__":
 
     #rul to read last version from github
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
-
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
@@ -225,7 +230,7 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionrule1("airbyte/airbyte-api-server"))
     json_array.append(getProductLastVersionrule1("airbyte/server"))
     json_array.append(getProductLastVersionrule1("dynatrace/dynatrace-operator"))
-#    json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
+    json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
     json_array.append(getProductLastVersionrule1("selenium/hub"))
     json_array.append(getProductLastVersionrule1("bitnami/argo-cd"))
 
