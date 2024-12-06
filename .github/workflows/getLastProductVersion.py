@@ -220,6 +220,8 @@ if __name__ == "__main__":
 
     #rul to read last version from github
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
+    json_array.append(getProductLastVersionruleGithub("airbytehq/airbyte"))
+
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
