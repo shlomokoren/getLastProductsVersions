@@ -5,12 +5,13 @@ from datetime import datetime
 import time
 from bs4 import BeautifulSoup
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 def get_versions(api_url):
     versions = []
     page = 1
     per_page = 100  # Adjust this value based on your needs
+    totalRecords = 0
 
     try:
         readRecords = 0  #records that alrady read
@@ -19,7 +20,6 @@ def get_versions(api_url):
             response = requests.get(api_url, params=params)
             response.raise_for_status()  # Raise an exception for HTTP errors
             data = response.json()  # Parse response as JSON
-            totalRecords = 0
             try:
                 pageCont = int(data["count"] / per_page) + 1
                 if page == 1 :
@@ -27,14 +27,20 @@ def get_versions(api_url):
                     print(f"    count is {totalRecords}  pageCont is {pageCont}  in {api_url} ")
             except:
                 print("pageCont error")
+            #print("debug- page:"+str(page)+ " totalRecords:"+str(totalRecords)+ " readRecords:"+ str(readRecords))
 
             results = data["results"]
             if not results:  # Stop if no more results are returned
                 break
-            versions.extend(tag["name"] for tag in results)
+            #versions.extend(tag["name"] for tag in results)
+            try:
+                for image in results:
+                    versions.append(image["name"])
+            except:
+                print("Error in page "+str(page))
             readRecords = readRecords + per_page
             if readRecords < totalRecords:
-                page += 1
+                page = page + 1
                 time.sleep(2)
             else:
                 break
