@@ -77,12 +77,16 @@ def getProductLastVersionruleGithub(product):
         return None
     data = response.json()
     pattern = r"^v\d+\.\d+\.\d+$"
+    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+)$"
     versionx = None
     for item in data:
         if re.match(pattern, item['name']):
             versionx = item['name']
             break
-    lastversion = versionx[1:]
+    lastversion = versionx
+    if versionx.startswith('v'):
+        lastversion = versionx[1:]
+
     print(product + "  "+lastversion)
     data = {"product": product, "lastVersion": lastversion, "reportDate": current_date_string}
     return data
@@ -221,6 +225,7 @@ if __name__ == "__main__":
     #rul to read last version from github
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
     json_array.append(getProductLastVersionruleGithub("airbytehq/airbyte"))
+    json_array.append(getProductLastVersionruleGithub("jenkinsci/docker"))
 
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
