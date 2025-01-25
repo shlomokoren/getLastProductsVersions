@@ -1,9 +1,13 @@
 import requests
 import re
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
 
 __version__ = "1.0.2"
 
@@ -92,6 +96,7 @@ def getProductLastVersionruleGithub(product):
     return data
 
 def getProductLastVersionrule1(product):
+    time1 = get_current_time()
     lastProductVersion = None
     data={"name":product,"lastversion":"","reportDate":current_date_string}
     api_url = "https://hub.docker.com/v2/repositories/"+product+"/tags/"
@@ -107,10 +112,14 @@ def getProductLastVersionrule1(product):
 
     lastProductVersion = getlastVersion(versions,product)
     data = {"product":product,"lastVersion": lastProductVersion,"reportDate":current_date_string}
+    time2 = get_current_time()
+    result = calculate_time_delta(time1, time2, format='%Y-%m-%d %H:%M:%S')
+    print(result)
     print(product +" last version is " + lastProductVersion)
     return data
 
 def getProductLastVersionrule2(product):
+    time1 = get_current_time()
     lastProductVersion = None
     products = product.split("/")
     data={"name":product,"lastversion":"","reportDate":current_date_string}
@@ -126,15 +135,14 @@ def getProductLastVersionrule2(product):
         return None
     lastProductVersion = getlastVersion(versions,product)
     data = {"product":product,"lastVersion": lastProductVersion,"reportDate":current_date_string}
+    time2 = get_current_time()
+    result = calculate_time_delta(time1, time2, format='%Y-%m-%d %H:%M:%S')
+    print(result)
     print(product +" last version is " + lastProductVersion)
     return data
 
 
 
-from datetime import datetime
-
-import requests
-from bs4 import BeautifulSoup
 
 
 def get_latest_artifactory_version(url,product):
@@ -212,7 +220,85 @@ def json_to_html_table(json_str):
     except Exception as e:
         print("An error occurred:", e)
 
+def get_current_time(format='%Y-%m-%d %H:%M:%S'):
+    """Get current time in specified format"""
+    return datetime.now().strftime(format)
 
+def calculate_time_delta(time1, time2, format='%Y-%m-%d %H:%M:%S'):
+    """
+    Calculate the time difference between two times
+
+    Args:
+        time1 (str): First time
+        time2 (str): Second time
+        format (str, optional): Time string format. Defaults to '%Y-%m-%d %H:%M:%S'
+
+    Returns:
+        dict: Time delta details including total seconds, days, hours, minutes, seconds
+    """
+    # Convert time strings to datetime objects
+    dt1 = datetime.strptime(time1, format)
+    dt2 = datetime.strptime(time2, format)
+
+    # Calculate time delta
+    delta = abs(dt2 - dt1)
+
+    # Break down delta into components
+    return {
+        'total_seconds': delta.total_seconds(),
+        'days': delta.days,
+        'hours': delta.seconds // 3600,
+        'minutes': (delta.seconds % 3600) // 60,
+        'seconds': delta.seconds % 60
+    }
+def getGitlablastversion(product):
+    versions = None
+    lastProductVersion = None
+    # URL to fetch
+    url = "https://gitlab.com/gitlab-org/gitlab-runner/-/releases"
+    # Configure headless Chrome
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")  # Required for running as root on Linux
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+
+    # Set up the Chrome WebDriver
+    driver = webdriver.Chrome(options=chrome_options)
+
+    try:
+        # Open the webpage
+        driver.get(url)
+
+        # Wait for the dynamic content to load
+        time.sleep(5)  # Adjust the sleep time as needed for the page to load fully
+        html_content = driver.page_source
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        # Find all <a> elements with the class 'gl-link gl-self-center gl-text-default'
+        version_elements = soup.find_all('a', class_='gl-link gl-self-center gl-text-default')
+
+        # Extract and print the versions
+        versions = [element.text.strip() for element in version_elements]
+        if versions:
+           # print("Found Versions:")
+           # for version in versions:
+           #     print(version)
+            lastProductVersion = versions[0]
+        else:
+            print("No versions found in the provided HTML.")
+    finally:
+        # Quit the browser
+        driver.quit()
+    #print("last version is: " + lastVersion)
+    if lastProductVersion == None:
+        print(product + " last version is None")
+        return (lastProductVersion)
+    else:
+        data = {"product": product, "lastVersion": lastProductVersion, "reportDate": current_date_string}
+        print(product + " last version is " + lastProductVersion)
+        return (data)
 
 # start
 if __name__ == "__main__":
@@ -226,13 +312,13 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
     json_array.append(getProductLastVersionruleGithub("airbytehq/airbyte"))
     json_array.append(getProductLastVersionruleGithub("jenkinsci/docker"))
-
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
     json_array.append(get_latest_artifactory_version(url,product))
 
-    json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
+    json_array.append(getGitlablastversion("gitlab/gitlab-ee"))
+    #json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
     json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
     json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
     json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
