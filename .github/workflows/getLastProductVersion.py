@@ -285,7 +285,7 @@ def getGitlablastversion(product):
            # print("Found Versions:")
            # for version in versions:
            #     print(version)
-            lastProductVersion = versions[0]
+            lastProductVersion = versions[0].replace('v', '')
         else:
             print("No versions found in the provided HTML.")
     finally:
