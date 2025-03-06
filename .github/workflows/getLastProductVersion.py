@@ -1,3 +1,5 @@
+import logging
+
 import requests
 import re
 import json
@@ -9,7 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 def get_versions(api_url):
     versions = []
@@ -300,13 +302,92 @@ def getGitlablastversion(product):
         print(product + " last version is " + lastProductVersion)
         return (data)
 
-# start
+def create_atlassian_products_versions_file():
+    result = 0
+    url = "https://api.atlassian.com/vuln-transparency/v1/products/versions"
+
+    headers = {
+        "Accept": "application/json"
+    }
+
+    # Define the parameters
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        with open("atlassian_products_versions.json", "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, indent=4, sort_keys=True)
+        print("JSON data has been saved to atlassian_products_versions.json")
+    else:
+        print(f"Failed to download atlassian_products_versions.json ")
+        logging.INFO(f"Faild to download atlassian_products_versions.json ,${response.text} , ${response.status_code}  ")
+        result = response.status_code
+
+    return result
+
+def create_atlassian_security_vulnerability_products_file():
+    result = 0
+    url = "https://api.atlassian.com/vuln-transparency/v1/products"
+
+    headers = {
+        "Accept": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        with open("atlassian_security_vulnerability_products.json", "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, indent=4, sort_keys=True)
+        print("JSON data has been saved to atlassian_security_vulnerability_products.json")
+    else:
+        print(f"Failed to download atlassian_security_vulnerability_products.json ")
+        logging.INFO(f"Faild to download atlassian_security_vulnerability_products.json ,${response.text} , ${response.status_code}  ")
+        result = response.status_code
+
+    return result
+
+def getProductLastVersionrule_atlassian(product):
+    time1 = get_current_time()
+    lastProductVersion = None
+    data={"name":product,"lastversion":"","reportDate":current_date_string}
+    body = {}
+    with open("atlassian_products_versions.json", "r", encoding="utf-8") as file:
+        body = json.load(file)
+    atlassianproduct=""
+    if product =="atlassian/bitbucket" :
+        atlassianproduct = "Bitbucket Data Center"
+    elif product =="atlassian/confluence":
+        atlassianproduct = "Confluence Data Center"
+    elif product =="atlassian/jira-servicemanagement":
+        atlassianproduct = "JIRA Service Management Data Center"
+    elif product =="atlassian/jira-software":
+        atlassianproduct = "JIRA Software Data Center"
+    else :
+        print(f"error in getProductLastVersionrule_atlassian function product ${product} is not supported")
+    lastProductVersion = body[atlassianproduct][0]
+    data = {"product":product,"lastVersion": lastProductVersion,"reportDate":current_date_string}
+    time2 = get_current_time()
+    result = calculate_time_delta(time1, time2, format='%Y-%m-%d %H:%M:%S')
+    print(result)
+    print(product +" last version is " + lastProductVersion)
+    return data
+
+
+
+###### start ###############################
 if __name__ == "__main__":
     json_array = []
     current_datetime = datetime.now()
     global current_date_string
     current_date_string = current_datetime.strftime("%d-%m-%Y")  # Format as "YYYY-MM-DD"
     print("current_date_string is " + current_date_string)
+    create_atlassian_products_versions_file()
+    create_atlassian_security_vulnerability_products_file()
+
+    json_array.append(getProductLastVersionrule_atlassian("atlassian/jira-software"))
+    json_array.append(getProductLastVersionrule_atlassian("atlassian/jira-servicemanagement"))
+    json_array.append(getProductLastVersionrule_atlassian("atlassian/bitbucket"))
+    json_array.append(getProductLastVersionrule_atlassian("atlassian/confluence"))
 
     #rul to read last version from github
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
@@ -317,17 +398,17 @@ if __name__ == "__main__":
     url = "https://jfrog.com/download-legacy/"
     json_array.append(get_latest_artifactory_version(url,product))
 
-    json_array.append(getGitlablastversion("gitlab/gitlab-ee"))
-    #json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
-    json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
-    json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
-    json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
-    json_array.append(getProductLastVersionrule1("atlassian/confluence"))
+    #json_array.append(getGitlablastversion("gitlab/gitlab-ee"))
+    json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
+
+#    json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
+#    json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
+#    json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
+#    json_array.append(getProductLastVersionrule1("atlassian/confluence"))
     json_array.append(getProductLastVersionrule1("jenkins/jenkins"))
     json_array.append(getProductLastVersionrule1("library/nginx"))
     json_array.append(getProductLastVersionrule1("library/sonarqube"))
     json_array.append(getProductLastVersionrule1("airbyte/airbyte-api-server"))
-   # json_array.append(getProductLastVersionrule1("airbyte/server"))
     json_array.append(getProductLastVersionrule1("dynatrace/dynatrace-operator"))
     json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
     json_array.append(getProductLastVersionrule1("selenium/hub"))
