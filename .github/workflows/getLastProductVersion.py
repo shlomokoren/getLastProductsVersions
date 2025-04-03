@@ -82,17 +82,20 @@ def getProductLastVersionruleGithub(product):
         raise Exception(f"Failed to load page: {response.status_code}")
         return None
     data = response.json()
-    pattern = r"^v\d+\.\d+\.\d+$"
-    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+)$"
+    #pattern = r"^v\d+\.\d+\.\d+$"
+    #pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+)$"
+    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+)$"
     versionx = None
     for item in data:
         if re.match(pattern, item['name']):
             versionx = item['name']
             break
     lastversion = versionx
-    if versionx.startswith('v'):
+    if re.match(r"^(v\d+\.\d+\.\d+)$",lastversion):
         lastversion = versionx[1:]
-
+    if re.match(r"^(\d+\.\d+\.\d+\.\d+)$",lastversion):
+        items = lastversion.split(".")
+        lastversion = items[0]+"."+ items[1]+"."+ items[2]
     print(product + "  "+lastversion)
     data = {"product": product, "lastVersion": lastversion, "reportDate": current_date_string}
     return data
@@ -384,6 +387,8 @@ if __name__ == "__main__":
     create_atlassian_products_versions_file()
     create_atlassian_security_vulnerability_products_file()
 
+
+
     json_array.append(getProductLastVersionrule_atlassian("atlassian/jira-software"))
     json_array.append(getProductLastVersionrule_atlassian("atlassian/jira-servicemanagement"))
     json_array.append(getProductLastVersionrule_atlassian("atlassian/bitbucket"))
@@ -394,6 +399,8 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("airbytehq/airbyte"))
     json_array.append(getProductLastVersionruleGithub("jenkinsci/docker"))
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
+    json_array.append(getProductLastVersionruleGithub("SonarSource/sonarqube"))
+
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
     json_array.append(get_latest_artifactory_version(url,product))
