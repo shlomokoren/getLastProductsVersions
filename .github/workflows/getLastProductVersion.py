@@ -11,7 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 def get_versions(api_url):
     versions = []
@@ -84,7 +84,7 @@ def getProductLastVersionruleGithub(product):
     data = response.json()
     #pattern = r"^v\d+\.\d+\.\d+$"
     #pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+)$"
-    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+)$"
+    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+|jenkins-\d+\.\d+)$"
     versionx = None
     for item in data:
         if re.match(pattern, item['name']):
@@ -96,6 +96,9 @@ def getProductLastVersionruleGithub(product):
     if re.match(r"^(\d+\.\d+\.\d+\.\d+)$",lastversion):
         items = lastversion.split(".")
         lastversion = items[0]+"."+ items[1]+"."+ items[2]
+    if re.match(r"^(jenkins-\d+\.\d+)$", lastversion):
+        lastversion = versionx[8:]
+
     print(product + "  "+lastversion)
     data = {"product": product, "lastVersion": lastversion, "reportDate": current_date_string}
     return data
@@ -400,6 +403,8 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("jenkinsci/docker"))
     json_array.append(getProductLastVersionrule2("grafana/grafana"))
     json_array.append(getProductLastVersionruleGithub("SonarSource/sonarqube"))
+    json_array.append(getProductLastVersionruleGithub("jenkinsci/jenkins"))
+
 
     product = "artifactory"
     url = "https://jfrog.com/download-legacy/"
