@@ -408,6 +408,7 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("nginx/nginx"))
     json_array.append(getProductLastVersionruleGithub("gitlabhq/gitlabhq"))
     json_array.append(getProductLastVersionruleGithub("SeleniumHQ/selenium"))
+    json_array.append(getProductLastVersionruleGithub("Dynatrace/dynatrace-operator"))
 
 
 
