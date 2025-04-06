@@ -82,9 +82,7 @@ def getProductLastVersionruleGithub(product):
         raise Exception(f"Failed to load page: {response.status_code}")
         return None
     data = response.json()
-    #pattern = r"^v\d+\.\d+\.\d+$"
-    #pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+)$"
-    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+|jenkins-\d+\.\d+)$"
+    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+|jenkins-\d+\.\d+|release-\d+\.\d+\.\d+)$"
     versionx = None
     for item in data:
         if re.match(pattern, item['name']):
@@ -93,10 +91,12 @@ def getProductLastVersionruleGithub(product):
     lastversion = versionx
     if re.match(r"^(v\d+\.\d+\.\d+)$",lastversion):
         lastversion = versionx[1:]
-    if re.match(r"^(\d+\.\d+\.\d+\.\d+)$",lastversion):
+    elif re.match(r"^(\d+\.\d+\.\d+\.\d+)$",lastversion):
         items = lastversion.split(".")
         lastversion = items[0]+"."+ items[1]+"."+ items[2]
-    if re.match(r"^(jenkins-\d+\.\d+)$", lastversion):
+    elif re.match(r"^(jenkins-\d+\.\d+)$", lastversion):
+        lastversion = versionx[8:]
+    elif re.match(r"^(release-\d+\.\d+\.\d+)$", lastversion):
         lastversion = versionx[8:]
 
     print(product + "  "+lastversion)
@@ -401,9 +401,11 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("mattermost/mattermost"))
     json_array.append(getProductLastVersionruleGithub("airbytehq/airbyte"))
     json_array.append(getProductLastVersionruleGithub("jenkinsci/docker"))
-    json_array.append(getProductLastVersionrule2("grafana/grafana"))
     json_array.append(getProductLastVersionruleGithub("SonarSource/sonarqube"))
-    json_array.append(getProductLastVersionruleGithub("jenkinsci/jenkins"))
+    json_array.append(getProductLastVersionruleGithub("grafana/grafana"))
+    json_array.append(getProductLastVersionruleGithub("nginx/nginx"))
+
+    #json_array.append(getProductLastVersionruleGithub("jenkinsci/jenkins"))
 
 
     product = "artifactory"
@@ -411,18 +413,13 @@ if __name__ == "__main__":
     json_array.append(get_latest_artifactory_version(url,product))
 
     #json_array.append(getGitlablastversion("gitlab/gitlab-ee"))
-    json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
 
-#    json_array.append(getProductLastVersionrule1("atlassian/jira-software"))
-#    json_array.append(getProductLastVersionrule1("atlassian/jira-servicemanagement"))
-#    json_array.append(getProductLastVersionrule1("atlassian/bitbucket"))
-#    json_array.append(getProductLastVersionrule1("atlassian/confluence"))
-    json_array.append(getProductLastVersionrule1("jenkins/jenkins"))
     json_array.append(getProductLastVersionrule1("library/nginx"))
-    json_array.append(getProductLastVersionrule1("library/sonarqube"))
+    #json_array.append(getProductLastVersionrule1("library/sonarqube"))
     json_array.append(getProductLastVersionrule1("airbyte/airbyte-api-server"))
     json_array.append(getProductLastVersionrule1("dynatrace/dynatrace-operator"))
-    json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
+#    json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
+#    json_array.append(getProductLastVersionrule2("grafana/grafana"))
     json_array.append(getProductLastVersionrule1("selenium/hub"))
     json_array.append(getProductLastVersionrule1("bitnami/argo-cd"))
 
