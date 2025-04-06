@@ -82,7 +82,7 @@ def getProductLastVersionruleGithub(product):
         raise Exception(f"Failed to load page: {response.status_code}")
         return None
     data = response.json()
-    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+|jenkins-\d+\.\d+|release-\d+\.\d+\.\d+)$"
+    pattern = r"^(v\d+\.\d+\.\d+|\d+\.\d+|\d+\.\d+\.\d+\.\d+|jenkins-\d+\.\d+|release-\d+\.\d+\.\d+|selenium-\d+\.\d+\.\d+)$"
     versionx = None
     for item in data:
         if re.match(pattern, item['name']):
@@ -98,6 +98,8 @@ def getProductLastVersionruleGithub(product):
         lastversion = versionx[8:]
     elif re.match(r"^(release-\d+\.\d+\.\d+)$", lastversion):
         lastversion = versionx[8:]
+    elif re.match(r"^(selenium-\d+\.\d+\.\d+)$", lastversion):
+        lastversion = versionx[9:]
 
     print(product + "  "+lastversion)
     data = {"product": product, "lastVersion": lastversion, "reportDate": current_date_string}
@@ -404,6 +406,10 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("SonarSource/sonarqube"))
     json_array.append(getProductLastVersionruleGithub("grafana/grafana"))
     json_array.append(getProductLastVersionruleGithub("nginx/nginx"))
+    json_array.append(getProductLastVersionruleGithub("gitlabhq/gitlabhq"))
+    json_array.append(getProductLastVersionruleGithub("SeleniumHQ/selenium"))
+
+
 
     #json_array.append(getProductLastVersionruleGithub("jenkinsci/jenkins"))
 
