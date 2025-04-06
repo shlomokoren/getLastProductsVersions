@@ -413,6 +413,7 @@ if __name__ == "__main__":
     json_array.append(get_latest_artifactory_version(url,product))
 
     #json_array.append(getGitlablastversion("gitlab/gitlab-ee"))
+    json_array.append(getProductLastVersionrule1("gitlab/gitlab-ee"))
 
     json_array.append(getProductLastVersionrule1("library/nginx"))
     #json_array.append(getProductLastVersionrule1("library/sonarqube"))
