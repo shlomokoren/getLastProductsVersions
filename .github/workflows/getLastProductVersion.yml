@@ -47,3 +47,24 @@ jobs:
           push:  true
           labels: |
             build.date=${{ env.DATE }}
+    # This will mark the job as failed if any step fails
+    continue-on-error: false
+
+  notify-on-failure:
+    needs: invest_sma_alert
+    if: failure()  # Only run if the previous job failed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failure notification email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: 'GitHub Action Failed: getLastProductVersion'
+          to: shlomo.koren@poalim.co.il
+          from: GitHub Action <shlomo.koren@gmail.com>
+          body: |
+            The GitHub Actions job 'getLastProductVersion' has failed.
+            Please check the logs at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
