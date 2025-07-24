@@ -52,7 +52,7 @@ jobs:
     continue-on-error: false
 
   notify-on-failure:
-    needs: getProductsLastVersions_scrip
+    needs: getProductsLastVersions_script
     if: failure()  # Only run if the previous job failed
     runs-on: ubuntu-latest
     steps:
