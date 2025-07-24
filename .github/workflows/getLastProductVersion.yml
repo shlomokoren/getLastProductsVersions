@@ -47,11 +47,12 @@ jobs:
           push:  true
           labels: |
             build.date=${{ env.DATE }}
+
     # This will mark the job as failed if any step fails
     continue-on-error: false
 
   notify-on-failure:
-    needs: invest_sma_alert
+    needs: getProductsLastVersions_scrip
     if: failure()  # Only run if the previous job failed
     runs-on: ubuntu-latest
     steps:
