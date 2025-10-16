@@ -429,7 +429,7 @@ if __name__ == "__main__":
 #    json_array.append(getProductLastVersionrule1("grafana/grafana-enterprise"))
 #    json_array.append(getProductLastVersionrule2("grafana/grafana"))
     json_array.append(getProductLastVersionrule1("selenium/hub"))
-    json_array.append(getProductLastVersionrule1("bitnami/argo-cd"))
+#    json_array.append(getProductLastVersionrule1("bitnami/argo-cd"))
 
 
     # Convert the list to a JSON array
