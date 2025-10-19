@@ -11,7 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 def get_versions(api_url):
     versions = []
@@ -409,6 +409,7 @@ if __name__ == "__main__":
     json_array.append(getProductLastVersionruleGithub("gitlabhq/gitlabhq"))
     json_array.append(getProductLastVersionruleGithub("SeleniumHQ/selenium"))
     json_array.append(getProductLastVersionruleGithub("Dynatrace/dynatrace-operator"))
+    json_array.append(getProductLastVersionruleGithub("argoproj/argo-cd"))
 
 
 
